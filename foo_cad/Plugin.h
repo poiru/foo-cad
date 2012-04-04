@@ -45,7 +45,8 @@ public:
 	void on_volume_change(float p_new_val) {}
 
 private:
-	static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	void register_cad(HWND cad);
+	static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	HWND m_Window;
 	HWND m_CadWindow;

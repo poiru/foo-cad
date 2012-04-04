@@ -48,7 +48,7 @@ foo_cad::~foo_cad()
 void foo_cad::on_init()
 {
 	WNDCLASS wc = {0};
-	wc.lpfnWndProc = WindowProc;
+	wc.lpfnWndProc = window_proc;
 	wc.hInstance = core_api::get_my_instance();
 	wc.lpszClassName = L"CD Art Display IPC Class";
 	ATOM atom = RegisterClass(&wc);
@@ -68,23 +68,7 @@ void foo_cad::on_init()
 
 	if (!m_Window) return;
 
-	m_CadWindow = FindWindow(nullptr, L"CD Art Display 1.x Class");
-	if (m_CadWindow)
-	{
-		WCHAR filename[MAX_PATH];
-		GetModuleFileName(GetModuleHandle(nullptr), filename, MAX_PATH);
-		
-		WCHAR buffer[MAX_PATH + 64];
-		int len = _snwprintf_s(buffer, _TRUNCATE, L"1\tCD Art Display IPC Class\tfoobar2000\t%s\t", filename);
-
-		COPYDATASTRUCT cds;
-		cds.dwData = PM_REGISTER;
-		cds.lpData = buffer;
-		cds.cbData = (len + 1) * 2;
-
-		// Register with CAD
-		SendMessage(m_CadWindow, WM_COPYDATA, (WPARAM)m_Window, (LPARAM)&cds);
-	}
+	register_cad(nullptr);
 
 	static_api_ptr_t<play_callback_manager> pcm;
 	pcm->register_callback(
@@ -198,7 +182,32 @@ void foo_cad::on_playback_dynamic_info_track(const file_info& info)
 	}
 }
 
-LRESULT CALLBACK foo_cad::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+void foo_cad::register_cad(HWND cad)
+{
+	if (!cad)
+	{
+		cad = FindWindow(nullptr, L"CD Art Display 1.x Class");
+	}
+
+	if (!m_CadWindow && cad)
+	{
+		m_CadWindow = cad;
+
+		WCHAR filename[MAX_PATH];
+		GetModuleFileName(GetModuleHandle(nullptr), filename, MAX_PATH);
+		
+		WCHAR buffer[MAX_PATH + 64];
+		int len = _snwprintf_s(buffer, _TRUNCATE, L"1\tCD Art Display IPC Class\tfoobar2000\t%s\t", filename);
+
+		COPYDATASTRUCT cds;
+		cds.dwData = PM_REGISTER;
+		cds.lpData = buffer;
+		cds.cbData = (len + 1) * sizeof(WCHAR);
+		SendMessage(m_CadWindow, WM_COPYDATA, (WPARAM)m_Window, (LPARAM)&cds);
+	}
+};
+
+LRESULT CALLBACK foo_cad::window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg != WM_USER)
 	{
@@ -329,9 +338,9 @@ LRESULT CALLBACK foo_cad::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 			return 1;
 		}
 
-	case CM_SETCALLBACKHWND:
+	case CM_REGISTER:
 		{
-			foo_interface.get_static_instance().m_CadWindow = (HWND)wParam;
+			foo_interface.get_static_instance().register_cad((HWND)wParam);
 			return 1;
 		}
 
