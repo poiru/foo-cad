@@ -220,7 +220,14 @@ LRESULT CALLBACK foo_cad::window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 	{
 	case CM_PLAY:
 		{
-			pbc->start();
+			if (pbc->is_paused())
+			{
+				pbc->pause(false);
+			}
+			else
+			{
+				pbc->start();
+			}
 			return 1;
 		}
 
