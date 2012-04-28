@@ -30,7 +30,7 @@ const GUID ORDER_SHUFFLE_DIRECTORIES = { 0x83C37600, 0xD725, 0x4727, { 0xB5, 0x3
 
 DECLARE_COMPONENT_VERSION(
 	"CD Art Display",
-	"1.0.1",
+	"1.0.2",
 	"© 2012 - Birunthan Mohanathas");
 
 static initquit_factory_t<foo_cad> foo_interface;
@@ -145,7 +145,7 @@ void foo_cad::on_playback_new_track(metadb_handle_ptr track)
 	if (!m_CadWindow) return;
 
 	service_ptr_t<titleformat_object> script;
-	pfc::string8 format = "[%title%]\t[%artist%]\t[%album%]\t\t$year(%date%)\t\t$num(%tracknumber%,0)\t%length_seconds%\t%path%\t$min($max(0,%rating%),5)\t \t\t\t\t\t\t\t";
+	pfc::string8 format = "[%title%]\t[%artist%]\t[%album%]\t\t$year(%date%)\t\t$num(%tracknumber%,0)\t%length_seconds%\t%path%\t$mul($min($max(0,%rating%),5),2)\t \t\t\t\t\t\t\t";
 
 	if (static_api_ptr_t<titleformat_compiler>()->compile(script, format))
 	{
