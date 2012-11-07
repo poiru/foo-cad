@@ -48,8 +48,8 @@ private:
 	void register_cad(HWND cad);
 	static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-	HWND m_Window;
-	HWND m_CadWindow;
+	HWND m_window;
+	HWND m_cad_window;
 };
 
 #endif

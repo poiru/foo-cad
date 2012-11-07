@@ -36,8 +36,8 @@ DECLARE_COMPONENT_VERSION(
 static initquit_factory_t<foo_cad> foo_interface;
 
 foo_cad::foo_cad() :
-	m_Window(),
-	m_CadWindow()
+	m_window(),
+	m_cad_window()
 {
 }
 
@@ -53,7 +53,7 @@ void foo_cad::on_init()
 	wc.lpszClassName = L"CD Art Display IPC Class";
 	ATOM atom = RegisterClass(&wc);
 
-	m_Window = CreateWindow(
+	m_window = CreateWindow(
 		MAKEINTATOM(atom),
 		L"foobar2000",
 		WS_DISABLED,
@@ -66,7 +66,7 @@ void foo_cad::on_init()
 		wc.hInstance,
 		nullptr);
 
-	if (!m_Window) return;
+	if (!m_window) return;
 
 	register_cad(nullptr);
 
@@ -86,25 +86,25 @@ void foo_cad::on_quit()
 {
 	static_api_ptr_t<play_callback_manager>()->unregister_callback(this);
 
-	if (m_CadWindow)
+	if (m_cad_window)
 	{
-		PostMessage(m_CadWindow, WM_USER, 0, PM_SHUTDOWN);
+		PostMessage(m_cad_window, WM_USER, 0, PM_SHUTDOWN);
 	}
 
-	if (m_Window)
+	if (m_window)
 	{
-		DestroyWindow(m_Window);
+		DestroyWindow(m_window);
 		UnregisterClass(L"CD Art Display IPC Class", core_api::get_my_instance());
 	}
 }
 
 void foo_cad::on_playback_starting(play_control::t_track_command command, bool paused)
 {
-	if (!m_CadWindow) return;
+	if (!m_cad_window) return;
 
 	if (paused)
 	{
-		PostMessage(m_CadWindow, WM_USER, PS_PAUSED, PM_STATECHANGED);
+		PostMessage(m_cad_window, WM_USER, PS_PAUSED, PM_STATECHANGED);
 	}
 	else
 	{
@@ -113,7 +113,7 @@ void foo_cad::on_playback_starting(play_control::t_track_command command, bool p
 		case play_control::track_command_play:
 		case play_control::track_command_resume:
 		case play_control::track_command_settrack:
-			PostMessage(m_CadWindow, WM_USER, PS_PLAYING, PM_STATECHANGED);
+			PostMessage(m_cad_window, WM_USER, PS_PLAYING, PM_STATECHANGED);
 			break;
 		}
 	}
@@ -121,28 +121,28 @@ void foo_cad::on_playback_starting(play_control::t_track_command command, bool p
 
 void foo_cad::on_playback_stop(play_control::t_stop_reason reason)
 {
-	if (!m_CadWindow) return;
+	if (!m_cad_window) return;
 
 	switch (reason)
 	{
 	case play_control::stop_reason_user:
 	case play_control::stop_reason_eof:
 	case play_control::stop_reason_shutting_down:
-		PostMessage(m_CadWindow, WM_USER, PS_STOPPED, PM_STATECHANGED);
+		PostMessage(m_cad_window, WM_USER, PS_STOPPED, PM_STATECHANGED);
 		break;
 	}
 }
 
 void foo_cad::on_playback_pause(bool state)
 {
-	if (!m_CadWindow) return;
+	if (!m_cad_window) return;
 
-	PostMessage(m_CadWindow, WM_USER, state ? PS_PAUSED : PS_PLAYING, PM_STATECHANGED);
+	PostMessage(m_cad_window, WM_USER, state ? PS_PAUSED : PS_PLAYING, PM_STATECHANGED);
 }
 
 void foo_cad::on_playback_new_track(metadb_handle_ptr track)
 {
-	if (!m_CadWindow) return;
+	if (!m_cad_window) return;
 
 	service_ptr_t<titleformat_object> script;
 	pfc::string8 format = "[%title%]\t[%artist%]\t[%album%]\t\t$year(%date%)\t\t$num(%tracknumber%,0)\t%length_seconds%\t%path%\t$mul($min($max(0,%rating%),5),2)\t \t\t\t\t\t\t\t";
@@ -166,13 +166,13 @@ void foo_cad::on_playback_new_track(metadb_handle_ptr track)
 		cds.dwData = PM_TRACKDATA;
 		cds.cbData = len * sizeof(WCHAR);
 		cds.lpData = (PVOID)buffer;
-		SendMessage(m_CadWindow, WM_COPYDATA, 0, (LPARAM)&cds);
+		SendMessage(m_cad_window, WM_COPYDATA, 0, (LPARAM)&cds);
 	}
 }
 
 void foo_cad::on_playback_dynamic_info_track(const file_info& info)
 {
-	if (!m_CadWindow) return;
+	if (!m_cad_window) return;
 
 	metadb_handle_ptr track;
 	static_api_ptr_t<playback_control> pbc;
@@ -189,9 +189,9 @@ void foo_cad::register_cad(HWND cad)
 		cad = FindWindow(nullptr, L"CD Art Display 1.x Class");
 	}
 
-	if (!m_CadWindow && cad)
+	if (!m_cad_window && cad)
 	{
-		m_CadWindow = cad;
+		m_cad_window = cad;
 
 		WCHAR filename[MAX_PATH];
 		GetModuleFileName(GetModuleHandle(nullptr), filename, MAX_PATH);
@@ -203,7 +203,7 @@ void foo_cad::register_cad(HWND cad)
 		cds.dwData = PM_REGISTER;
 		cds.lpData = buffer;
 		cds.cbData = (len + 1) * sizeof(WCHAR);
-		SendMessage(m_CadWindow, WM_COPYDATA, (WPARAM)m_Window, (LPARAM)&cds);
+		SendMessage(m_cad_window, WM_COPYDATA, (WPARAM)m_window, (LPARAM)&cds);
 	}
 };
 
@@ -341,7 +341,7 @@ LRESULT CALLBACK foo_cad::window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 	case CM_SETRATING:
 		{
 			// Not supported, send back 0
-			PostMessage(foo_interface.get_static_instance().m_CadWindow, WM_USER, 0, PM_RATINGCHANGED);
+			PostMessage(foo_interface.get_static_instance().m_cad_window, WM_USER, 0, PM_RATINGCHANGED);
 			return 1;
 		}
 
@@ -366,7 +366,7 @@ LRESULT CALLBACK foo_cad::window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	case PM_SHUTDOWN:
 		{
-			foo_interface.get_static_instance().m_CadWindow = NULL;
+			foo_interface.get_static_instance().m_cad_window = NULL;
 			return 1;
 		}
 
