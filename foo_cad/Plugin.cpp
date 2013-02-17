@@ -197,7 +197,7 @@ void foo_cad::register_cad(HWND cad)
 		GetModuleFileName(GetModuleHandle(nullptr), filename, MAX_PATH);
 		
 		WCHAR buffer[MAX_PATH + 64];
-		int len = _snwprintf_s(buffer, _TRUNCATE, L"1\tCD Art Display IPC Class\tfoobar2000\t%s\t", filename);
+		int len = wsprintf(buffer, L"1\tCD Art Display IPC Class\tfoobar2000\t%s\t", filename);
 
 		COPYDATASTRUCT cds;
 		cds.dwData = PM_REGISTER;
@@ -359,8 +359,8 @@ LRESULT CALLBACK foo_cad::window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	case CM_GETSTATE:
 		{
-			return pbc->is_playing() ? PS_PLAYING :
-				pbc->is_paused() ? PS_PAUSED :
+			return pbc->is_paused() ? PS_PAUSED :
+				pbc->is_playing() ? PS_PLAYING :
 				PS_STOPPED;
 		}
 
