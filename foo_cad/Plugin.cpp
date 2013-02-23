@@ -30,8 +30,8 @@ const GUID ORDER_SHUFFLE_DIRECTORIES = { 0x83C37600, 0xD725, 0x4727, { 0xB5, 0x3
 
 DECLARE_COMPONENT_VERSION(
 	"CD Art Display",
-	"1.0.2",
-	"© 2012 - Birunthan Mohanathas");
+	"1.0.3",
+	"© 2013 - Birunthan Mohanathas");
 
 static initquit_factory_t<foo_cad> foo_interface;
 
