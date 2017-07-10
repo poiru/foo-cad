@@ -151,6 +151,8 @@ void foo_cad::on_playback_new_track(metadb_handle_ptr track)
 	{
 		static_api_ptr_t<playback_control> pbc;
 
+		PostMessage(m_cad_window, WM_USER, pbc->is_paused() ? PS_PAUSED : pbc->is_playing() ? PS_PLAYING : PS_STOPPED, PM_STATECHANGED);
+
 		pbc->playback_format_title_ex(
 			track,
 			nullptr,
@@ -205,6 +207,10 @@ void foo_cad::register_cad(HWND cad)
 		cds.cbData = (len + 1) * sizeof(WCHAR);
 		SendMessage(m_cad_window, WM_COPYDATA, (WPARAM)m_window, (LPARAM)&cds);
 	}
+
+	static_api_ptr_t<playback_control> pbc;
+
+	PostMessage(m_cad_window, WM_USER, pbc->is_paused() ? PS_PAUSED : pbc->is_playing() ? PS_PLAYING : PS_STOPPED, PM_STATECHANGED);
 };
 
 LRESULT CALLBACK foo_cad::window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
